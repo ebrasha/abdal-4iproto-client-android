@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.PublicOff
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -72,7 +73,8 @@ fun HomeScreen(
     onAboutClick: () -> Unit,
     onLogClick: () -> Unit,
     onAdvancedSettingsClick: () -> Unit,
-    onPerAppSplitTunClick: () -> Unit
+    onPerAppSplitTunClick: () -> Unit,
+    onUdpTunnelClick: () -> Unit
 ) {
     val context = LocalContext.current
     val servers by viewModel.allServers.collectAsStateWithLifecycle()
@@ -188,6 +190,16 @@ fun HomeScreen(
                     onClick = {
                         scope.launch { drawerState.close() }
                         onPerAppSplitTunClick()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Share, contentDescription = null) },
+                    label = { Text(stringResource(R.string.udp_tunnel)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onUdpTunnelClick()
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )

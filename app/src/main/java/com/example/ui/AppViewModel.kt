@@ -50,7 +50,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefs = application.getSharedPreferences("abdal_vpn_prefs", Context.MODE_PRIVATE)
 
-    private val _killSwitchEnabled = kotlinx.coroutines.flow.MutableStateFlow(prefs.getBoolean("kill_switch", false))
+    private val _killSwitchEnabled = kotlinx.coroutines.flow.MutableStateFlow(prefs.getBoolean("kill_switch", true))
     val killSwitchEnabled: StateFlow<Boolean> = _killSwitchEnabled
     fun setKillSwitch(enabled: Boolean) { 
         _killSwitchEnabled.value = enabled
@@ -58,7 +58,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         SoundManager.playSwitch()
     }
 
-    private val _fakeIpEnabled = kotlinx.coroutines.flow.MutableStateFlow(prefs.getBoolean("fake_ip", false))
+    private val _fakeIpEnabled = kotlinx.coroutines.flow.MutableStateFlow(prefs.getBoolean("fake_ip", true))
     val fakeIpEnabled: StateFlow<Boolean> = _fakeIpEnabled
     fun setFakeIp(enabled: Boolean) { 
         _fakeIpEnabled.value = enabled

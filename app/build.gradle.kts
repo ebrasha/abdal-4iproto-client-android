@@ -15,8 +15,8 @@ android {
     applicationId = "net.abdal.abdal4iproto.client"
     minSdk = 24
     targetSdk = 36
-    versionCode = 62
-    versionName = "6.2"
+    versionCode = 70
+    versionName = "7.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -105,7 +105,7 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   // implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
-  // implementation(libs.firebase.ai)
+  
   implementation(libs.jsch)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)

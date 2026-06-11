@@ -1,0 +1,6 @@
+*.keystore
+*.jks
+debug.keystore
+debug.keystore.base64
+my-upload-key.jks
+*.base64

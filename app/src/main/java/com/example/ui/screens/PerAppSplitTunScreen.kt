@@ -115,8 +115,17 @@ fun PerAppSplitTunScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                val filteredApps = remember(installedApps, searchQuery) {
-                    installedApps!!.filter { it.appName.contains(searchQuery, ignoreCase = true) }
+                // Snapshot the selection when the list first loads so enabled apps are pinned to the top
+                // on entry, without rows jumping around while the user is toggling switches.
+                val pinnedSelection = remember(installedApps) { selectedApps }
+                val filteredApps = remember(installedApps, searchQuery, pinnedSelection) {
+                    installedApps!!
+                        .filter { it.appName.contains(searchQuery, ignoreCase = true) }
+                        .sortedWith(
+                            compareByDescending<com.example.ui.AppInfo> {
+                                pinnedSelection.contains(it.packageName)
+                            }.thenBy { it.appName.lowercase() }
+                        )
                 }
 
                 LazyColumn(modifier = Modifier.fillMaxSize()) {

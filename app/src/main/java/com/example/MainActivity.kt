@@ -45,7 +45,8 @@ class MainActivity : ComponentActivity() {
                                 onAboutClick = { navController.navigate("about") },
                                 onLogClick = { navController.navigate("logs") },
                                 onAdvancedSettingsClick = { navController.navigate("advanced_settings") },
-                                onPerAppSplitTunClick = { navController.navigate("per_app_split_tun") }
+                                onPerAppSplitTunClick = { navController.navigate("per_app_split_tun") },
+                                onUdpTunnelClick = { navController.navigate("udp_tunnel") }
                             )
                         }
                         composable("server_management") {
@@ -93,6 +94,13 @@ class MainActivity : ComponentActivity() {
                             val perAppViewModel: com.example.ui.PerAppViewModel by viewModels()
                             com.example.ui.screens.PerAppSplitTunScreen(
                                 viewModel = perAppViewModel,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+                        composable("udp_tunnel") {
+                            val udpViewModel: com.example.ui.UdpViewModel by viewModels()
+                            com.example.ui.screens.UdpTunnelScreen(
+                                viewModel = udpViewModel,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
