@@ -135,6 +135,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         SoundManager.playSwitch()
     }
 
+    private val _soundsEnabled = MutableStateFlow(
+        prefs.getBoolean(SoundManager.PREFS_KEY_SOUNDS_ENABLED, true)
+    )
+    val soundsEnabled: StateFlow<Boolean> = _soundsEnabled.asStateFlow()
+
+    fun setSoundsEnabled(enabled: Boolean) {
+        _soundsEnabled.value = enabled
+        prefs.edit().putBoolean(SoundManager.PREFS_KEY_SOUNDS_ENABLED, enabled).apply()
+        SoundManager.setEnabled(enabled)
+        if (enabled) {
+            SoundManager.playSwitch()
+        }
+    }
+
     private val connectionTimerController = ConnectionTimerController()
     val connectionTimer: StateFlow<ConnectionTimerState> = connectionTimerController.state
 
@@ -152,6 +166,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         SoundManager.init(application)
+        SoundManager.setEnabled(_soundsEnabled.value)
         TunnelLogger.setEnabled(_loggingEnabled.value)
         latencyMeasurer.setMeasureIntervalSeconds(_pingIntervalSeconds.value)
         latencyMeasurer.setEnabled(_pingMeasurementEnabled.value)

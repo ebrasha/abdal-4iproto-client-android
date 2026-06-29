@@ -14,8 +14,8 @@ android {
     applicationId = "net.abdal.abdal4iproto.client"
     minSdk = 26
     targetSdk = 36
-    versionCode = 85
-    versionName = "8.5"
+    versionCode = 88
+    versionName = "8.8"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

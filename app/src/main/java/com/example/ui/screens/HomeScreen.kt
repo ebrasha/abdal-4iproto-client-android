@@ -19,6 +19,7 @@ package com.example.ui.screens
 
 import android.app.Activity
 import android.net.VpnService
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -292,7 +293,14 @@ fun HomeScreen(
                     randomPortMode = randomPortMode,
                     onTogglePortMode = {
                         selectedServer?.let { server ->
+                            val nextIsRandom = !randomPortMode
                             viewModel.toggleRandomPortMode(server.id)
+                            val message = if (nextIsRandom) {
+                                context.getString(R.string.random_port_mode)
+                            } else {
+                                context.getString(R.string.fixed_port_mode)
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
                     },
                     onOpenServerManagement = onServerManagementClick

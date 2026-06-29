@@ -99,6 +99,8 @@
     <string name="open_server_list">Open server list</string>
     <string name="app_logging_title">In-app logging</string>
     <string name="app_logging_desc">Record tunnel events in the log screen. When disabled, new events are not stored in the app (Logcat is still available for debugging).</string>
+    <string name="app_sounds_title">App sounds</string>
+    <string name="app_sounds_desc">Play sound effects for connect, disconnect, errors, and setting changes.</string>
     <string name="ping_measurement_title">Ping measurement</string>
     <string name="ping_measurement_desc">Probe server latency on the home screen. Disable to stop network checks and show unknown latency.</string>
     <string name="logs_disabled">In-app logging is disabled. Enable it in Advanced Settings to capture tunnel events.</string>

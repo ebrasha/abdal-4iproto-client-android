@@ -6,7 +6,7 @@
  * Author : Ebrahim Shafiei (EbraSha)
  * Email : Prof.Shafiei@Gmail.com
  * Created On : 2026-06-29 19:49:24
- * Description : Advanced settings with instant-save toggles for logging, ping, kill switch, fake-IP, and whitelist.
+ * Description : Advanced settings with flat bordered cards and instant-save toggles.
  * -------------------------------------------------------------------
  *
  * "Coding is an engaging and beloved hobby for me. I passionately and insatiably pursue knowledge in cybersecurity and programming."
@@ -17,6 +17,7 @@
 
 package com.example.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,7 +30,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.ui.AppViewModel
+import com.example.ui.components.SettingsCard
 import com.example.util.PingIntervalConfig
 import kotlin.math.roundToInt
 
@@ -64,6 +65,7 @@ fun AdvancedSettingsScreen(
     val pingInterval by viewModel.pingIntervalSeconds.collectAsStateWithLifecycle()
     val killSwitchEnabled by viewModel.killSwitchEnabled.collectAsStateWithLifecycle()
     val fakeIpEnabled by viewModel.fakeIpEnabled.collectAsStateWithLifecycle()
+    val soundsEnabled by viewModel.soundsEnabled.collectAsStateWithLifecycle()
     val whitelistIps by viewModel.whitelistIps.collectAsStateWithLifecycle()
     val pingSliderSteps =
         ((PingIntervalConfig.MAX_SECONDS - PingIntervalConfig.MIN_SECONDS) / PingIntervalConfig.STEP_SECONDS) - 1
@@ -92,9 +94,10 @@ fun AdvancedSettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingsSection(
+            SettingsCard(
                 title = stringResource(R.string.app_logging_title),
                 description = stringResource(R.string.app_logging_desc)
             ) {
@@ -104,11 +107,7 @@ fun AdvancedSettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SettingsSection(
+            SettingsCard(
                 title = stringResource(R.string.ping_measurement_title),
                 description = stringResource(R.string.ping_measurement_desc)
             ) {
@@ -136,11 +135,7 @@ fun AdvancedSettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SettingsSection(
+            SettingsCard(
                 title = stringResource(R.string.kill_switch),
                 description = stringResource(R.string.kill_switch_desc)
             ) {
@@ -150,11 +145,7 @@ fun AdvancedSettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SettingsSection(
+            SettingsCard(
                 title = stringResource(R.string.fake_ip_dns),
                 description = stringResource(R.string.fake_ip_dns_desc)
             ) {
@@ -164,11 +155,17 @@ fun AdvancedSettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(24.dp))
+            SettingsCard(
+                title = stringResource(R.string.app_sounds_title),
+                description = stringResource(R.string.app_sounds_desc)
+            ) {
+                SettingsSwitchRow(
+                    checked = soundsEnabled,
+                    onCheckedChange = { viewModel.setSoundsEnabled(it) }
+                )
+            }
 
-            SettingsSection(
+            SettingsCard(
                 title = stringResource(R.string.whitelist_ips_title),
                 description = stringResource(R.string.whitelist_ips_desc)
             ) {
@@ -184,27 +181,6 @@ fun AdvancedSettingsScreen(
             }
         }
     }
-}
-
-@Composable
-private fun SettingsSection(
-    title: String,
-    description: String,
-    content: @Composable () -> Unit
-) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-        text = description,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-    Spacer(modifier = Modifier.height(12.dp))
-    content()
 }
 
 @Composable

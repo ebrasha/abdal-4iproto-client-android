@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 object SoundManager {
 
+    const val PREFS_KEY_SOUNDS_ENABLED = "app_sounds_enabled"
+
     private var soundPool: SoundPool? = null
 
     private var startSoundId = 0
@@ -46,6 +48,13 @@ object SoundManager {
     // Ensures a burst of repeated failures triggers the error sound only once, until either the
     // next successful connection or a new user-initiated connect attempt re-arms it.
     private val errorSoundArmed = AtomicBoolean(true)
+    private val soundsEnabled = AtomicBoolean(true)
+
+    fun setEnabled(enabled: Boolean) {
+        soundsEnabled.set(enabled)
+    }
+
+    fun isEnabled(): Boolean = soundsEnabled.get()
 
     /**
      * Loads all sound samples once. Safe to call multiple times and from multiple components
@@ -108,7 +117,7 @@ object SoundManager {
     }
 
     private fun play(soundId: Int) {
-        if (soundId == 0) return
+        if (soundId == 0 || !soundsEnabled.get()) return
         soundPool?.play(soundId, 1f, 1f, 1, 0, 1f)
     }
 

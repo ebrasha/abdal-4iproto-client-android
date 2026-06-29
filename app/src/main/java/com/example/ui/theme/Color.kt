@@ -91,3 +91,6 @@ val LogErrorBackground = Color(0xFFFEE2E2)
 val LogErrorForeground = Color(0xFFEF4444)
 val LogMetaText = Color(0xFF94A3B8)
 val LogMessageText = Color(0xFF1E293B)
+
+// Advanced settings card design tokens
+val SettingsCardBorder = Color(0xFFE5E7EB)
