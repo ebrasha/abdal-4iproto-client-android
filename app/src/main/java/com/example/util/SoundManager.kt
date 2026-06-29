@@ -1,7 +1,7 @@
 /*
  **********************************************************************
  * -------------------------------------------------------------------
- * Project Name : SSH Tunnel
+ * Project Name : Abdal 4iProto Android
  * File Name : SoundManager.kt
  * Author : Ebrahim Shafiei (EbraSha)
  * Email : Prof.Shafiei@Gmail.com

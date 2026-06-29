@@ -1,7 +1,7 @@
 /*
  **********************************************************************
  * -------------------------------------------------------------------
- * Project Name : SSH Tunnel
+ * Project Name : Abdal 4iProto Android
  * File Name : HevSocksTunnel.kt
  * Author : Ebrahim Shafiei (EbraSha)
  * Email : Prof.Shafiei@Gmail.com
@@ -70,6 +70,22 @@ object HevSocksTunnel {
         ).apply {
             isDaemon = true
             start()
+        }
+    }
+
+    /**
+     * Returns tunnel traffic counters from the native engine, or null when unavailable.
+     * Layout: [tx_packets, tx_bytes, rx_packets, rx_bytes].
+     */
+    fun getStats(): LongArray? {
+        if (!TProxyService.libraryLoaded()) {
+            return null
+        }
+        return try {
+            TProxyService.TProxyGetStats()
+        } catch (t: Throwable) {
+            TunnelLogger.warn(TAG, "Failed to read tunnel stats", t)
+            null
         }
     }
 

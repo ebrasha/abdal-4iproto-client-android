@@ -1,6 +1,5 @@
 package com.example.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,6 +22,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.data.ServerEntity
 import com.example.ui.AppViewModel
+import com.example.ui.components.CountryFlagImage
+import com.example.ui.components.ListCardShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,6 +104,7 @@ fun ServerManagementScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServerManagementItem(server: ServerEntity, isSelected: Boolean, onSelect: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
@@ -131,21 +133,30 @@ fun ServerManagementItem(server: ServerEntity, isSelected: Boolean, onSelect: ()
     }
 
     Surface(
+        onClick = onSelect,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable(onClick = onSelect),
-        shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+            .padding(vertical = 4.dp),
+        shape = ListCardShape,
+        color = if (isSelected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        }
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            CountryFlagImage(
+                countryCode = server.countryCode,
+                size = 36.dp,
+                modifier = Modifier.padding(end = 12.dp)
+            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = server.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
-                    text = "${server.ip}:${server.port}",
+                    text = "${server.ip}:${server.displayPort}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

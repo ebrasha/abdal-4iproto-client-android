@@ -1,12 +1,12 @@
 /*
  **********************************************************************
  * -------------------------------------------------------------------
- * Project Name : SSH Tunnel
+ * Project Name : Abdal 4iProto Android
  * File Name : LogScreen.kt
  * Author : Ebrahim Shafiei (EbraSha)
  * Email : Prof.Shafiei@Gmail.com
  * Created On : 2026-06-03 15:59:00
- * Description : Live diagnostics screen that shows the tunnel log with copy, clear and exit actions.
+ * Description : Live diagnostics screen that shows structured tunnel log cards with copy, clear and exit actions.
  * -------------------------------------------------------------------
  *
  * "Coding is an engaging and beloved hobby for me. I passionately and insatiably pursue knowledge in cybersecurity and programming."
@@ -18,40 +18,59 @@
 package com.example.ui.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.ui.AppViewModel
+import com.example.ui.components.LogEntryCard
 import com.example.util.TunnelLogger
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogScreen(onBackClick: () -> Unit) {
+fun LogScreen(
+    viewModel: AppViewModel,
+    onBackClick: () -> Unit
+) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val logLines by TunnelLogger.lines.collectAsStateWithLifecycle()
+    val logEntries by TunnelLogger.entries.collectAsStateWithLifecycle()
+    val loggingEnabled by viewModel.loggingEnabled.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
-    // Keep the newest log line visible.
-    LaunchedEffect(logLines.size) {
-        if (logLines.isNotEmpty()) {
-            listState.animateScrollToItem(logLines.size - 1)
+    LaunchedEffect(logEntries.size) {
+        if (logEntries.isNotEmpty()) {
+            listState.animateScrollToItem(logEntries.size - 1)
         }
     }
 
@@ -80,7 +99,8 @@ fun LogScreen(onBackClick: () -> Unit) {
                             context.getString(R.string.log_copied),
                             Toast.LENGTH_SHORT
                         ).show()
-                    }
+                    },
+                    enabled = logEntries.isNotEmpty()
                 ) {
                     Text(stringResource(R.string.copy_log))
                 }
@@ -95,36 +115,49 @@ fun LogScreen(onBackClick: () -> Unit) {
             }
         }
     ) { padding ->
-        if (logLines.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.logs_empty),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                items(logLines) { line ->
+        when {
+            !loggingEnabled -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = line,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(vertical = 2.dp)
+                        text = stringResource(R.string.logs_disabled),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+            logEntries.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.logs_empty),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            else -> {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(logEntries, key = { "${it.timestamp}_${it.tag}_${it.message}" }) { entry ->
+                        LogEntryCard(entry = entry)
+                    }
                 }
             }
         }

@@ -55,6 +55,7 @@ The goal is private, censorship‑resistant, and secure internet access using **
 - 🧱 **Kill Switch** — if the tunnel drops unexpectedly (e.g. the server restarts) and you haven't pressed Disconnect, internet traffic is blocked until the tunnel is restored or you disconnect — preventing leaks.
 - 🪢 **Split tunneling** — private/LAN ranges (e.g. `192.168.x.x`, `10.x.x.x`) automatically bypass the tunnel, so local devices (FTP server on the phone, router, printers, casting) keep working while connected.
 - ✅ **Whitelist IPs / CIDR** — add single IPs or CIDR blocks in *Advanced Settings* to bypass the tunnel on demand.
+- ⏱️ **Configurable ping interval** — in *Advanced Settings*, set how often the home screen measures server latency (default 10 s; lower values update faster but use more network/battery).
 - 📲 **Per-App Split Tunneling** — a dedicated *Per-App Split Tun* screen lets you decide which apps use the tunnel. **Route via Tunnel** mode tunnels only the apps you pick, while **Bypass Tunnel** mode tunnels every app except the ones you pick. A searchable list shows your installed apps, each with its own toggle. Apps kept off the tunnel are also exempt from the Kill Switch, so they keep normal connectivity at all times.
 - 🔁 **Auto‑Reconnect** — automatically reconnects with smart exponential backoff if the connection drops.
 - 📜 **Real‑time in‑app logs** — watch exactly what happens behind the scenes, with copy and clear actions.
@@ -62,6 +63,12 @@ The goal is private, censorship‑resistant, and secure internet access using **
 - 🆔 **Custom client identity** — presents `SSH-2.0-Abdal-4iProto-Android` to the server.
 - 🔑 **Broad algorithm support** — wide key‑exchange/host‑key/cipher negotiation, including `ssh-ed25519` (via Bouncy Castle) for maximum server compatibility.
 - 🎨 **Modern UI** — clean Material 3 (Jetpack Compose) interface with a hamburger menu for quick access to all features.
+- 📊 **Redesigned home dashboard** — connection timer (always visible), large connect button with status, active **server card** (flag, name, endpoint, live ping, 4iProto badge, port-mode toggle), **traffic chart** (download/upload), and **session stats** (latency, peak speed, data used today).
+- 🏳️ **Country flags & multi-port servers** — each server stores a two-letter ISO country code with flag icons; multiple SSH ports (comma-separated) are supported with **fixed** or **random port on connect** (the port is chosen only when you tap Connect, not while idle).
+- 📶 **Live latency (ping)** — periodic TCP probes to the selected server with color-coded quality on the server card and stats panel; probe interval is configurable in **Advanced Settings** (default **10 seconds**, range 5–120 s).
+- 📈 **Real-time traffic chart** — smooth dual-series area chart (download green / upload blue) driven by native `hev-socks5-tunnel` statistics.
+- 🌐 **UDP Tunnel (enabled by default)** — transparent UDP routing and fixed UDP forwarder over the proprietary `direct-udpip` SSH channel; toggle and fine-tune from the menu (**UDP Tunnel** screen). 
+- ↩️ **Back closes the drawer** — when the hamburger menu is open on the home screen, the system Back button closes the menu instead of exiting the app.
 - 🙈 **No telemetry** — the app does not collect or send your data anywhere; you connect only to your own server.
 
 ---
@@ -109,7 +116,7 @@ The goal is private, censorship‑resistant, and secure internet access using **
 
 - 🛠️ **compileSdk:** `36` (Android 16)
 - 🎯 **targetSdk:** `36`
-- 📉 **minSdk:** `24` (Android 7.0 Nougat)
+- 📉 **minSdk:** `26` (Android 8.0)
 - 📦 **applicationId:** `net.abdal.abdal4iproto.client` · **versionName:** `5.2` (versionCode `52`)
 
 **Platform APIs used**

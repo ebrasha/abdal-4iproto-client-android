@@ -1,7 +1,7 @@
 /*
  **********************************************************************
  * -------------------------------------------------------------------
- * Project Name : SSH Tunnel
+ * Project Name : Abdal 4iProto Android
  * File Name : UdpTunnelConfig.kt
  * Author : Ebrahim Shafiei (EbraSha)
  * Email : Prof.Shafiei@Gmail.com
@@ -71,7 +71,7 @@ data class UdpTunnelConfig(
         fun fromPreferences(context: Context): UdpTunnelConfig {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-            val enabled = prefs.getBoolean(KEY_ENABLED, false)
+            val enabled = prefs.getBoolean(KEY_ENABLED, true)
 
             val keepalive = prefs.getString(KEY_KEEPALIVE, null)
                 .toIntInRange(min = 1, max = Int.MAX_VALUE, fallback = DEFAULT_KEEPALIVE_SECONDS)

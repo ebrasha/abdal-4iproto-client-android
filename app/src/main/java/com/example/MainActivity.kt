@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("logs") {
                             LogScreen(
+                                viewModel = viewModel,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }

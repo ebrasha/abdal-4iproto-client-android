@@ -10,7 +10,7 @@ class UdpViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefs = application.getSharedPreferences("abdal_vpn_prefs", Context.MODE_PRIVATE)
 
-    private val _udpTunnelEnabled = MutableStateFlow(prefs.getBoolean("udp_tunnel_enabled", false))
+    private val _udpTunnelEnabled = MutableStateFlow(prefs.getBoolean("udp_tunnel_enabled", true))
     val udpTunnelEnabled: StateFlow<Boolean> = _udpTunnelEnabled
 
     private val _keepaliveInterval = MutableStateFlow(prefs.getString("udp_keepalive_interval", "30") ?: "30")

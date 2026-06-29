@@ -1,7 +1,7 @@
 /*
  **********************************************************************
  * -------------------------------------------------------------------
- * Project Name : SSH Tunnel
+ * Project Name : Abdal 4iProto Android
  * File Name : AbdalVpnService.kt
  * Author : Ebrahim Shafiei (EbraSha)
  * Email : Prof.Shafiei@Gmail.com
@@ -107,11 +107,11 @@ class AbdalVpnService : VpnService() {
         private val RECONNECT_DELAYS_MS = longArrayOf(1_000L, 2_000L, 5_000L, 10_000L, 30_000L, 60_000L)
 
         // RFC 1918 private ranges plus other special-use ranges that must bypass the tunnel so that
-        // LAN devices (local FTP server, router, printers, casting) and loopback keep working while connected.
+        // LAN devices (local FTP server, router, printers, casting) keep working while connected.
+        // Loopback (127.0.0.0/8) is omitted: Android rejects excludeRoute for it and localhost never uses the TUN anyway.
         private val PRIVATE_RANGES = listOf(
             Cidr("10.0.0.0", 8),
             Cidr("100.64.0.0", 10),
-            Cidr("127.0.0.0", 8),
             Cidr("169.254.0.0", 16),
             Cidr("172.16.0.0", 12),
             Cidr("192.168.0.0", 16),

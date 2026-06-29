@@ -1,12 +1,12 @@
 /*
  **********************************************************************
  * -------------------------------------------------------------------
- * Project Name : SSH Tunnel
+ * Project Name : Abdal 4iProto Android
  * File Name : TunnelLogger.kt
  * Author : Ebrahim Shafiei (EbraSha)
  * Email : Prof.Shafiei@Gmail.com
- * Created On : 2026-06-03 15:59:00
- * Description : In-app, lifecycle-wide log buffer that mirrors events to Logcat and exposes them to the UI.
+ * Created On : 2026-06-29 19:48:20
+ * Description : Structured in-app log buffer with optional capture and Logcat mirroring.
  * -------------------------------------------------------------------
  *
  * "Coding is an engaging and beloved hobby for me. I passionately and insatiably pursue knowledge in cybersecurity and programming."
@@ -24,69 +24,103 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
+
+enum class LogLevel {
+    INFO,
+    WARN,
+    ERROR;
+
+    val wireCode: String
+        get() = when (this) {
+            INFO -> "I"
+            WARN -> "W"
+            ERROR -> "E"
+        }
+}
+
+data class LogEntry(
+    val timestamp: String,
+    val level: LogLevel,
+    val tag: String,
+    val message: String
+) {
+    val formattedLine: String
+        get() = "$timestamp ${level.wireCode}/$tag: $message"
+}
 
 /**
- * Thread-safe, in-memory ring buffer of human readable log lines.
- * The connection pipeline writes here so the user can inspect everything that happens behind the scenes.
+ * Thread-safe, in-memory ring buffer of structured log entries.
+ * The connection pipeline writes here so the user can inspect tunnel activity in-app.
  */
 object TunnelLogger {
+
+    const val PREFS_KEY_LOGGING_ENABLED = "app_logging_enabled"
 
     private const val MAX_LINES = 800
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
 
-    private val buffer = ArrayDeque<String>()
+    private val buffer = ArrayDeque<LogEntry>()
     private val lock = Any()
+    private val enabled = AtomicBoolean(false)
 
-    private val _lines = MutableStateFlow<List<String>>(emptyList())
-    val lines: StateFlow<List<String>> = _lines.asStateFlow()
+    private val _entries = MutableStateFlow<List<LogEntry>>(emptyList())
+    val entries: StateFlow<List<LogEntry>> = _entries.asStateFlow()
 
-    /**
-     * Appends an informational line.
-     */
+    fun setEnabled(value: Boolean) {
+        enabled.set(value)
+    }
+
+    fun isEnabled(): Boolean = enabled.get()
+
     fun info(tag: String, message: String) {
         Log.i(tag, message)
-        append("I", tag, message)
+        append(LogLevel.INFO, tag, message)
     }
 
-    /**
-     * Appends a warning line.
-     */
     fun warn(tag: String, message: String, throwable: Throwable? = null) {
         Log.w(tag, message, throwable)
-        append("W", tag, message + (throwable?.let { " :: ${it.message}" } ?: ""))
+        val fullMessage = message + (throwable?.let { " :: ${it.message}" } ?: "")
+        append(LogLevel.WARN, tag, fullMessage)
     }
 
-    /**
-     * Appends an error line.
-     */
     fun error(tag: String, message: String, throwable: Throwable? = null) {
         Log.e(tag, message, throwable)
-        append("E", tag, message + (throwable?.let { " :: ${it.javaClass.simpleName}: ${it.message}" } ?: ""))
+        val fullMessage = message + (
+            throwable?.let { " :: ${it.javaClass.simpleName}: ${it.message}" } ?: ""
+            )
+        append(LogLevel.ERROR, tag, fullMessage)
     }
 
-    /**
-     * Clears the whole buffer.
-     */
     fun clear() {
         synchronized(lock) {
             buffer.clear()
-            _lines.value = emptyList()
+            _entries.value = emptyList()
         }
     }
 
-    /**
-     * Returns the buffer joined as a single block of text for sharing/copying.
-     */
-    fun dump(): String = synchronized(lock) { buffer.joinToString(separator = "\n") }
+    fun dump(): String = synchronized(lock) {
+        buffer.joinToString(separator = "\n") { it.formattedLine }
+    }
 
-    private fun append(level: String, tag: String, message: String) {
-        val line = "${timeFormat.format(Date())} $level/$tag: $message"
+    fun dumpEntry(entry: LogEntry): String = entry.formattedLine
+
+    private fun append(level: LogLevel, tag: String, message: String) {
+        if (!enabled.get()) {
+            return
+        }
+        val entry = LogEntry(
+            timestamp = timeFormat.format(Date()),
+            level = level,
+            tag = tag,
+            message = message
+        )
         synchronized(lock) {
-            buffer.addLast(line)
+            buffer.addLast(entry)
             while (buffer.size > MAX_LINES) {
                 buffer.removeFirst()
             }
-            _lines.value = buffer.toList()
+            _entries.value = buffer.toList()
         }
     }
 }
