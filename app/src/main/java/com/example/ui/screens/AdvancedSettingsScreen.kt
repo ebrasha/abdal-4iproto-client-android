@@ -51,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.ui.AppViewModel
 import com.example.ui.components.SettingsCard
+import com.example.util.DashboardRefreshConfig
 import com.example.util.PingIntervalConfig
 import kotlin.math.roundToInt
 
@@ -66,9 +67,15 @@ fun AdvancedSettingsScreen(
     val killSwitchEnabled by viewModel.killSwitchEnabled.collectAsStateWithLifecycle()
     val fakeIpEnabled by viewModel.fakeIpEnabled.collectAsStateWithLifecycle()
     val soundsEnabled by viewModel.soundsEnabled.collectAsStateWithLifecycle()
+    val statsRefreshMs by viewModel.statsRefreshIntervalMs.collectAsStateWithLifecycle()
+    val chartRefreshMs by viewModel.chartRefreshIntervalMs.collectAsStateWithLifecycle()
     val whitelistIps by viewModel.whitelistIps.collectAsStateWithLifecycle()
     val pingSliderSteps =
         ((PingIntervalConfig.MAX_SECONDS - PingIntervalConfig.MIN_SECONDS) / PingIntervalConfig.STEP_SECONDS) - 1
+    val statsSliderSteps =
+        ((DashboardRefreshConfig.MAX_MS - DashboardRefreshConfig.MIN_STATS_MS) / DashboardRefreshConfig.STEP_MS) - 1
+    val chartSliderSteps =
+        ((DashboardRefreshConfig.MAX_MS - DashboardRefreshConfig.MIN_CHART_MS) / DashboardRefreshConfig.STEP_MS) - 1
 
     Scaffold(
         topBar = {
@@ -162,6 +169,43 @@ fun AdvancedSettingsScreen(
                 SettingsSwitchRow(
                     checked = soundsEnabled,
                     onCheckedChange = { viewModel.setSoundsEnabled(it) }
+                )
+            }
+
+            SettingsCard(
+                title = stringResource(R.string.dashboard_refresh_title),
+                description = stringResource(R.string.dashboard_refresh_desc)
+            ) {
+                Text(
+                    text = stringResource(R.string.stats_refresh_interval_label, statsRefreshMs),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Slider(
+                    value = statsRefreshMs.toFloat(),
+                    onValueChange = { value ->
+                        viewModel.setStatsRefreshIntervalMs(value.roundToInt())
+                    },
+                    valueRange = DashboardRefreshConfig.MIN_STATS_MS.toFloat()..DashboardRefreshConfig.MAX_MS.toFloat(),
+                    steps = statsSliderSteps.coerceAtLeast(0),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.chart_refresh_interval_label, chartRefreshMs),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Slider(
+                    value = chartRefreshMs.toFloat(),
+                    onValueChange = { value ->
+                        viewModel.setChartRefreshIntervalMs(value.roundToInt())
+                    },
+                    valueRange = DashboardRefreshConfig.MIN_CHART_MS.toFloat()..DashboardRefreshConfig.MAX_MS.toFloat(),
+                    steps = chartSliderSteps.coerceAtLeast(0),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 

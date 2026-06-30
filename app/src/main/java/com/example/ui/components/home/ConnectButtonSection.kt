@@ -59,7 +59,10 @@ fun ConnectButtonSection(
             VpnState.CONNECTED -> ConnectGreen
             VpnState.ERROR -> Color(0xFFF44336)
         },
-        animationSpec = tween(500),
+        animationSpec = when (vpnState) {
+            VpnState.CONNECTING -> tween(durationMillis = 150)
+            else -> tween(durationMillis = 500)
+        },
         label = "connectButtonColor"
     )
 

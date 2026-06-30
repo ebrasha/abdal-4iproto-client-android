@@ -29,17 +29,20 @@ import com.example.data.ServerEntity
 import com.example.data.ServerRepository
 import com.example.util.ConnectionTimerController
 import com.example.util.ConnectionTimerState
+import com.example.util.DashboardRefreshConfig
 import com.example.util.LatencyMeasurer
 import com.example.util.LatencyState
 import com.example.util.PortParser
 import com.example.util.PingIntervalConfig
 import com.example.util.SoundManager
-import com.example.util.TrafficStatsState
+import com.example.util.TrafficChartSeries
+import com.example.util.TrafficLiveStats
 import com.example.util.TunnelLogger
 import com.example.util.TunnelStatsMonitor
 import com.example.vpn.AbdalVpnService
 import com.example.vpn.VpnState
 import com.example.vpn.VpnStateNotifier
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -149,11 +152,53 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val _statsRefreshIntervalMs = MutableStateFlow(
+        DashboardRefreshConfig.coerceStatsMs(
+            prefs.getInt(
+                DashboardRefreshConfig.PREFS_KEY_STATS_MS,
+                DashboardRefreshConfig.DEFAULT_STATS_MS
+            )
+        )
+    )
+    val statsRefreshIntervalMs: StateFlow<Int> = _statsRefreshIntervalMs.asStateFlow()
+
+    private val _chartRefreshIntervalMs = MutableStateFlow(
+        DashboardRefreshConfig.coerceChartMs(
+            prefs.getInt(
+                DashboardRefreshConfig.PREFS_KEY_CHART_MS,
+                DashboardRefreshConfig.DEFAULT_CHART_MS
+            ),
+            _statsRefreshIntervalMs.value
+        )
+    )
+    val chartRefreshIntervalMs: StateFlow<Int> = _chartRefreshIntervalMs.asStateFlow()
+
+    fun setStatsRefreshIntervalMs(millis: Int) {
+        val coerced = DashboardRefreshConfig.coerceStatsMs(millis)
+        _statsRefreshIntervalMs.value = coerced
+        prefs.edit().putInt(DashboardRefreshConfig.PREFS_KEY_STATS_MS, coerced).apply()
+        tunnelStatsMonitor.setStatsIntervalMs(coerced)
+        val chart = DashboardRefreshConfig.coerceChartMs(_chartRefreshIntervalMs.value, coerced)
+        if (chart != _chartRefreshIntervalMs.value) {
+            setChartRefreshIntervalMs(chart)
+        } else {
+            tunnelStatsMonitor.setChartIntervalMs(chart)
+        }
+    }
+
+    fun setChartRefreshIntervalMs(millis: Int) {
+        val coerced = DashboardRefreshConfig.coerceChartMs(millis, _statsRefreshIntervalMs.value)
+        _chartRefreshIntervalMs.value = coerced
+        prefs.edit().putInt(DashboardRefreshConfig.PREFS_KEY_CHART_MS, coerced).apply()
+        tunnelStatsMonitor.setChartIntervalMs(coerced)
+    }
+
     private val connectionTimerController = ConnectionTimerController()
     val connectionTimer: StateFlow<ConnectionTimerState> = connectionTimerController.state
 
-    private val tunnelStatsMonitor = TunnelStatsMonitor(viewModelScope, application)
-    val trafficStats: StateFlow<TrafficStatsState> = tunnelStatsMonitor.state
+    private val tunnelStatsMonitor = TunnelStatsMonitor(application)
+    val liveStats: StateFlow<TrafficLiveStats> = tunnelStatsMonitor.liveStats
+    val chartSeries: StateFlow<TrafficChartSeries> = tunnelStatsMonitor.chartSeries
 
     private val latencyMeasurer = LatencyMeasurer(viewModelScope)
     val latencyState: StateFlow<LatencyState> = latencyMeasurer.state
@@ -164,12 +209,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _portModeRevision = MutableStateFlow(0)
     val portModeRevision: StateFlow<Int> = _portModeRevision.asStateFlow()
 
+    private var connectionTimerJob: Job? = null
+
     init {
         SoundManager.init(application)
         SoundManager.setEnabled(_soundsEnabled.value)
         TunnelLogger.setEnabled(_loggingEnabled.value)
         latencyMeasurer.setMeasureIntervalSeconds(_pingIntervalSeconds.value)
         latencyMeasurer.setEnabled(_pingMeasurementEnabled.value)
+        tunnelStatsMonitor.setStatsIntervalMs(_statsRefreshIntervalMs.value)
+        tunnelStatsMonitor.setChartIntervalMs(_chartRefreshIntervalMs.value)
         val serverDao = AppDatabase.getDatabase(application).serverDao()
         repository = ServerRepository(serverDao)
         allServers = repository.allServers.stateIn(
@@ -188,10 +237,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        viewModelScope.launch {
+        connectionTimerJob = viewModelScope.launch {
             while (true) {
                 delay(1_000L)
-                connectionTimerController.tickSecond()
+                if (vpnState.value == VpnState.CONNECTED) {
+                    connectionTimerController.tickSecond()
+                }
             }
         }
 
@@ -219,6 +270,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 refreshLatencyTarget(server)
             }
         }
+    }
+
+    override fun onCleared() {
+        connectionTimerJob?.cancel()
+        tunnelStatsMonitor.destroy()
+        latencyMeasurer.updateTarget(null, 22)
+        super.onCleared()
     }
 
     private fun refreshLatencyTarget(server: ServerEntity?) {
@@ -323,6 +381,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             SoundManager.playStart()
             connectionTimerController.onUserConnectRequested()
+            VpnStateNotifier.updateState(VpnState.CONNECTING)
             val port = resolvePortForConnect(server)
             val intent = Intent(context, AbdalVpnService::class.java).apply {
                 action = AbdalVpnService.ACTION_CONNECT

@@ -62,6 +62,7 @@ class AbdalVpnService : VpnService() {
     private var reconnectAttempts = 0
     private val reconnectScheduled = AtomicBoolean(false)
     private val userRequestedDisconnect = AtomicBoolean(false)
+    private val teardownInProgress = AtomicBoolean(false)
 
     // True once the tunnel has reached the CONNECTED state at least once for the active session.
     // The kill switch only engages after a successful connection, never during the first connect attempt.
@@ -155,7 +156,7 @@ class AbdalVpnService : VpnService() {
                 reconnectJob?.cancel()
                 connectJob?.cancel()
                 monitorJob?.cancel()
-                teardown(resetState = true, stopService = true)
+                requestTeardown(resetState = true, stopService = true)
                 return START_NOT_STICKY
             }
             ACTION_CONNECT -> {
@@ -195,7 +196,7 @@ class AbdalVpnService : VpnService() {
         reconnectJob?.cancel()
         connectJob?.cancel()
         monitorJob?.cancel()
-        teardown(resetState = true, stopService = true)
+        requestTeardown(resetState = true, stopService = true)
         super.onRevoke()
     }
 
@@ -206,7 +207,7 @@ class AbdalVpnService : VpnService() {
         reconnectJob?.cancel()
         connectJob?.cancel()
         monitorJob?.cancel()
-        teardown(resetState = true, stopService = true)
+        requestTeardown(resetState = true, stopService = true)
         job.cancel()
         super.onDestroy()
     }
@@ -768,6 +769,19 @@ class AbdalVpnService : VpnService() {
     private fun cleanupTunnelResources() {
         stopTunnelEngineAndSession()
         closeVpnInterface()
+    }
+
+    private fun requestTeardown(resetState: Boolean, stopService: Boolean) {
+        if (!teardownInProgress.compareAndSet(false, true)) {
+            return
+        }
+        scope.launch {
+            try {
+                teardown(resetState = resetState, stopService = stopService)
+            } finally {
+                teardownInProgress.set(false)
+            }
+        }
     }
 
     private fun teardown(resetState: Boolean, stopService: Boolean) {

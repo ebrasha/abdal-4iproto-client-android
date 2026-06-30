@@ -33,9 +33,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -43,30 +43,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.ui.components.DashboardCardShape
 import com.example.ui.theme.ChartCardBackground
 import com.example.ui.theme.ChartDownloadGreen
 import com.example.ui.theme.ChartHeaderLabel
 import com.example.ui.theme.ChartIconForeground
 import com.example.ui.theme.ChartUploadBlue
 import com.example.util.BitrateFormatter
-import com.example.util.TrafficStatsState
+import com.example.util.TrafficChartSeries
+import com.example.util.TrafficLiveStats
 
 @Composable
 fun TrafficChartCard(
-    trafficStats: TrafficStatsState,
+    liveStats: TrafficLiveStats,
+    chartSeries: TrafficChartSeries,
     modifier: Modifier = Modifier
 ) {
     val downloadLabel = stringResource(R.string.download)
     val uploadLabel = stringResource(R.string.upload)
-    val downloadValue = BitrateFormatter.formatSpeed(trafficStats.downloadMbps * 1_000_000.0)
-    val uploadValue = BitrateFormatter.formatSpeed(trafficStats.uploadMbps * 1_000_000.0)
+    val downloadValue = remember(liveStats.downloadMbps) {
+        BitrateFormatter.formatSpeed(liveStats.downloadMbps * 1_000_000.0)
+    }
+    val uploadValue = remember(liveStats.uploadMbps) {
+        BitrateFormatter.formatSpeed(liveStats.uploadMbps * 1_000_000.0)
+    }
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = DashboardCardShape,
+    HomeDashboardCard(
         color = ChartCardBackground,
-        shadowElevation = 2.dp
+        modifier = modifier
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -95,8 +98,8 @@ fun TrafficChartCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             TrafficAreaChart(
-                downloadSeries = trafficStats.downloadHistory,
-                uploadSeries = trafficStats.uploadHistory
+                downloadSeries = chartSeries.downloadHistory,
+                uploadSeries = chartSeries.uploadHistory
             )
         }
     }

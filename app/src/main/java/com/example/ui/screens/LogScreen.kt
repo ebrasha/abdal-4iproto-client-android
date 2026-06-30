@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -55,6 +56,10 @@ import com.example.R
 import com.example.ui.AppViewModel
 import com.example.ui.components.LogEntryCard
 import com.example.util.TunnelLogger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,13 +69,19 @@ fun LogScreen(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
     val logEntries by TunnelLogger.entries.collectAsStateWithLifecycle()
     val loggingEnabled by viewModel.loggingEnabled.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
     LaunchedEffect(logEntries.size) {
-        if (logEntries.isNotEmpty()) {
-            listState.animateScrollToItem(logEntries.size - 1)
+        if (logEntries.isEmpty()) {
+            return@LaunchedEffect
+        }
+        delay(400L)
+        val lastIndex = logEntries.lastIndex
+        if (lastIndex >= 0) {
+            listState.scrollToItem(lastIndex)
         }
     }
 
@@ -93,12 +104,17 @@ fun LogScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 TextButton(
                     onClick = {
-                        clipboardManager.setText(AnnotatedString(TunnelLogger.dump()))
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.log_copied),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        scope.launch {
+                            val dump = withContext(Dispatchers.Default) {
+                                TunnelLogger.dump()
+                            }
+                            clipboardManager.setText(AnnotatedString(dump))
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.log_copied),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     },
                     enabled = logEntries.isNotEmpty()
                 ) {
@@ -155,7 +171,7 @@ fun LogScreen(
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(logEntries, key = { "${it.timestamp}_${it.tag}_${it.message}" }) { entry ->
+                    items(logEntries, key = { it.id }) { entry ->
                         LogEntryCard(entry = entry)
                     }
                 }

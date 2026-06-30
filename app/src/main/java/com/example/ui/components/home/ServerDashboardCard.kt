@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.ArrowRightAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,7 +48,6 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.ServerEntity
 import com.example.ui.components.CountryFlagImage
-import com.example.ui.components.DashboardCardShape
 import com.example.ui.components.PillShape
 import com.example.ui.components.ToggleButtonShape
 import com.example.ui.components.shapeClickable
@@ -113,11 +111,9 @@ fun ServerDashboardCard(
     onOpenServerManagement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = DashboardCardShape,
+    HomeDashboardCard(
         color = ServerCardBackground,
-        shadowElevation = 2.dp
+        modifier = modifier
     ) {
         if (server == null) {
             Text(
@@ -126,7 +122,7 @@ fun ServerDashboardCard(
                 color = ServerAddressText,
                 fontSize = 15.sp
             )
-            return@Surface
+            return@HomeDashboardCard
         }
 
         val pingStyle = pingChipStyle(latencyState.quality)

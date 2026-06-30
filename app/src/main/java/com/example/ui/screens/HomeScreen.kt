@@ -96,7 +96,8 @@ fun HomeScreen(
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val selectedServer by viewModel.selectedServer.collectAsStateWithLifecycle()
     val connectionTimer by viewModel.connectionTimer.collectAsStateWithLifecycle()
-    val trafficStats by viewModel.trafficStats.collectAsStateWithLifecycle()
+    val liveStats by viewModel.liveStats.collectAsStateWithLifecycle()
+    val chartSeries by viewModel.chartSeries.collectAsStateWithLifecycle()
     val latencyState by viewModel.latencyState.collectAsStateWithLifecycle()
     val activeSessionPort by viewModel.activeSessionPort.collectAsStateWithLifecycle()
     val portModeRevision by viewModel.portModeRevision.collectAsStateWithLifecycle()
@@ -308,13 +309,16 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TrafficChartCard(trafficStats = trafficStats)
+                TrafficChartCard(
+                    liveStats = liveStats,
+                    chartSeries = chartSeries
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 StatsSummaryCard(
                     latencyState = latencyState,
-                    trafficStats = trafficStats
+                    liveStats = liveStats
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))

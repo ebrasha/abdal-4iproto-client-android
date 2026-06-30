@@ -69,6 +69,7 @@ class UdpNat(
 
     private val flows = ConcurrentHashMap<FlowKey, Flow>()
     private val closed = AtomicBoolean(false)
+    private val sessionFailureReported = AtomicBoolean(false)
 
     private val sweeper = Thread({ sweepLoop() }, "abdal-udp-nat-sweeper").apply {
         isDaemon = true
@@ -227,7 +228,7 @@ class UdpNat(
     }
 
     private fun reportFailureIfSessionDown(failure: Throwable) {
-        if (!session.isConnected) {
+        if (!session.isConnected && sessionFailureReported.compareAndSet(false, true)) {
             onSessionDown(failure)
         }
     }

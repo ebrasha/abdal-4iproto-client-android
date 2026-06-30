@@ -17,8 +17,6 @@
 
 package com.example.ui.components.home
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,8 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +58,6 @@ private const val AXIS_TICK_COUNT = 3
 private const val LINE_STROKE_DP = 2.5f
 private const val DOWNLOAD_FILL_TOP_ALPHA = 0.30f
 private const val UPLOAD_FILL_TOP_ALPHA = 0.28f
-private const val SERIES_ANIMATION_MS = 420
 
 @Composable
 fun TrafficAreaChart(
@@ -71,10 +66,10 @@ fun TrafficAreaChart(
     modifier: Modifier = Modifier
 ) {
     val normalizedDownload = remember(downloadSeries) {
-        downloadSeries.ifEmpty { emptyList() }
+        downloadSeries.ifEmpty { listOf(0f) }
     }
     val normalizedUpload = remember(uploadSeries) {
-        uploadSeries.ifEmpty { emptyList() }
+        uploadSeries.ifEmpty { listOf(0f) }
     }
 
     val axisMaxMbps = remember(normalizedDownload, normalizedUpload) {
@@ -89,10 +84,6 @@ fun TrafficAreaChart(
     val yAxisLabels = remember(axisMaxMbps) {
         buildAxisLabels(axisMaxMbps, AXIS_TICK_COUNT)
     }
-
-    val animatedDownload = rememberAnimatedSeries(normalizedDownload)
-    val animatedUpload = rememberAnimatedSeries(normalizedUpload)
-    val animatedMax = rememberAnimatedScalar(axisMaxMbps)
 
     Row(
         modifier = modifier
@@ -144,14 +135,14 @@ fun TrafficAreaChart(
                 }
 
                 val downloadPoints = seriesToPoints(
-                    series = animatedDownload,
-                    axisMaxMbps = animatedMax,
+                    series = normalizedDownload,
+                    axisMaxMbps = axisMaxMbps,
                     width = chartWidth,
                     height = chartHeight
                 )
                 val uploadPoints = seriesToPoints(
-                    series = animatedUpload,
-                    axisMaxMbps = animatedMax,
+                    series = normalizedUpload,
+                    axisMaxMbps = axisMaxMbps,
                     width = chartWidth,
                     height = chartHeight
                 )
@@ -171,57 +162,6 @@ fun TrafficAreaChart(
             }
         }
     }
-}
-
-@Composable
-private fun rememberAnimatedSeries(target: List<Float>): List<Float> {
-    val normalizedTarget = remember(target) {
-        if (target.isEmpty()) listOf(0f) else target
-    }
-    val from = remember { mutableStateListOf<Float>() }
-    val to = remember { mutableStateListOf<Float>() }
-    val progress = remember { Animatable(1f) }
-
-    LaunchedEffect(normalizedTarget) {
-        if (to.isEmpty()) {
-            from.clear()
-            from.addAll(normalizedTarget)
-            to.clear()
-            to.addAll(normalizedTarget)
-            return@LaunchedEffect
-        }
-        if (to.size != normalizedTarget.size) {
-            from.clear()
-            from.addAll(normalizedTarget)
-            to.clear()
-            to.addAll(normalizedTarget)
-            progress.snapTo(1f)
-            return@LaunchedEffect
-        }
-        from.clear()
-        from.addAll(to)
-        to.clear()
-        to.addAll(normalizedTarget)
-        progress.snapTo(0f)
-        progress.animateTo(1f, animationSpec = tween(SERIES_ANIMATION_MS))
-    }
-
-    val blend = progress.value
-    if (from.isEmpty() || to.isEmpty() || from.size != to.size) {
-        return normalizedTarget
-    }
-    return List(to.size) { index ->
-        from[index] + (to[index] - from[index]) * blend
-    }
-}
-
-@Composable
-private fun rememberAnimatedScalar(target: Float): Float {
-    val animatable = remember { Animatable(target) }
-    LaunchedEffect(target) {
-        animatable.animateTo(target, animationSpec = tween(SERIES_ANIMATION_MS))
-    }
-    return animatable.value
 }
 
 private fun buildAxisLabels(axisMaxMbps: Float, tickCount: Int): List<String> {

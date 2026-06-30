@@ -35,7 +35,6 @@ import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -49,7 +48,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.ui.components.DashboardCardShape
 import com.example.ui.theme.StatsCardBackground
 import com.example.ui.theme.StatsDataAccent
 import com.example.ui.theme.StatsDataIconBackground
@@ -67,7 +65,7 @@ import com.example.ui.theme.StatsValueText
 import com.example.util.BitrateFormatter
 import com.example.util.LatencyQuality
 import com.example.util.LatencyState
-import com.example.util.TrafficStatsState
+import com.example.util.TrafficLiveStats
 
 private val StatsIconSize = 36.dp
 private val StatsIconGlyphSize = 18.dp
@@ -77,7 +75,7 @@ private val StatsDividerHorizontalPadding = 3.dp
 @Composable
 fun StatsSummaryCard(
     latencyState: LatencyState,
-    trafficStats: TrafficStatsState,
+    liveStats: TrafficLiveStats,
     modifier: Modifier = Modifier
 ) {
     val latencyTitle = stringResource(R.string.latency)
@@ -92,17 +90,15 @@ fun StatsSummaryCard(
         ""
     }
 
-    val peakFormatted = BitrateFormatter.formatSpeed(trafficStats.peakSpeedMbps * 1_000_000.0)
+    val peakFormatted = BitrateFormatter.formatSpeed(liveStats.peakSpeedMbps * 1_000_000.0)
     val (peakValue, peakUnit) = splitValueAndUnit(peakFormatted)
 
-    val dataFormatted = BitrateFormatter.formatDataSize(trafficStats.dataUsedTodayBytes)
+    val dataFormatted = BitrateFormatter.formatDataSize(liveStats.dataUsedTodayBytes)
     val (dataValue, dataUnit) = splitValueAndUnit(dataFormatted)
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = DashboardCardShape,
+    HomeDashboardCard(
         color = StatsCardBackground,
-        shadowElevation = 2.dp
+        modifier = modifier
     ) {
         Row(
             modifier = Modifier
@@ -132,7 +128,7 @@ fun StatsSummaryCard(
                 title = peakTitle,
                 value = peakValue,
                 unit = peakUnit,
-                statusText = peakStatusLabel(trafficStats.peakSpeedMbps),
+                statusText = peakStatusLabel(liveStats.peakSpeedMbps),
                 statusColor = StatsPeakAccent,
                 modifier = Modifier.weight(1f)
             )

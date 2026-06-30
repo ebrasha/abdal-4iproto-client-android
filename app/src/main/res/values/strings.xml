@@ -101,6 +101,10 @@
     <string name="app_logging_desc">Record tunnel events in the log screen. When disabled, new events are not stored in the app (Logcat is still available for debugging).</string>
     <string name="app_sounds_title">App sounds</string>
     <string name="app_sounds_desc">Play sound effects for connect, disconnect, errors, and setting changes.</string>
+    <string name="dashboard_refresh_title">Dashboard refresh</string>
+    <string name="dashboard_refresh_desc">Control how often live traffic numbers and the chart update. Longer intervals reduce CPU use and help keep the app responsive on slower devices.</string>
+    <string name="stats_refresh_interval_label">Live stats: %1$d ms</string>
+    <string name="chart_refresh_interval_label">Chart update: %1$d ms</string>
     <string name="ping_measurement_title">Ping measurement</string>
     <string name="ping_measurement_desc">Probe server latency on the home screen. Disable to stop network checks and show unknown latency.</string>
     <string name="logs_disabled">In-app logging is disabled. Enable it in Advanced Settings to capture tunnel events.</string>
